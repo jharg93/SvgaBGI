@@ -1,0 +1,88 @@
+SuperVGA S3 BGI driver 
+Version 1.6
+March 30, 1994
+
+Revisions:
+	1.5 - August 28, 1993
+	1.1 - May 20, 1993
+	1.05 - January 28, 1993
+	1.0 - June 28, 1992
+
+This is the latest version of my SuperVGA S3 BGI driver.  All functions
+have been implemented, but there may still be bugs.
+
+	o Apparently there is a problem with using putimage at addresses >64k
+	(The driver will put up a solid block instead of the image)
+
+Note:  Palette functions, and the mouse cursor will not work with this driver.
+       Paging is not yet implemented
+
+  Using the driver in the 256 and 16 color modes is similar to using the
+  standard SuperVGA 256 and 16 color drivers.  See the files NOTES[256|16].SVG
+
+  Using the S3 driver in 32768 color mode:
+
+	Implementing the 32768 color driver involved several hacks, as
+	the BGI interface only supports 8-bit color values, but the driver
+	needed support for 15-bit color values.  The procedures that needed
+	to be changed were those that accepted color values, (SetColor,
+	SetFillStyle, SetFillPattern, PutPixel and Floodfill)  and those 
+	that return color values (GetColor and GetPixel).
+	As the HiColor modes do not support palettes, I decided to use
+	the SetRgbPalette call to set colors, as it accepts values for the 
+	R,G and B components of the color.
+
+	The format of a pixel in the HiColor modes is:
+		-Byte 1- -Byte 0-
+		xRRRRRGG GGGBBBBB
+
+	Several new functions are defined to make the color selection easier.
+	In addition, the macro RGB(rv,gv,bv) has been defined.  It packs
+	the R, G and B values into the format described above and returns the
+	combined color.
+
+	* RealDrawColor(); - Sets the current drawing color.
+	  Usage:
+	    setcolor(RealDrawColor(RGB(rval,gval,bval)); - HiColor modes
+	    setcolor(RealDrawColor(cval)); - (suggested for any other driver)
+
+	* RealFillColor(); - Sets the current fill color.
+	  Usage:
+	    setfillstyle(fillstyle,RealFillColor(RGB(rval,gval,bval)));
+	    setfillstyle(fillstyle,RealFillColor(cval));
+	    setfillpattern(fillpat,RealFillColor(RGB(rval,gval,bval)));
+	    setfillpattern(fillpat,RealFillColor(cval));
+
+	* RealColor(); - For putpixel, sets the color of the pixel
+		       - For floodfill, sets the color of the boundary
+	    putpixel(x,y,RealColor(RGB(rval,gval,bval)));
+	    putpixel(x,y,RealColor(cval));
+	    floodfill(x,y,RealColor(RGB(rval,gval,bval)));
+	    floodfill(x,y,RealColor(cval));
+
+	* GetPixel normally only returns an 8-bit value.  However, the
+	  value returned from the BGI driver is a 16-bit value in DX (the 
+	  BGI kernel loads the value into AX and clears the upper 8 bits),
+	  so to read the value of a pixel:
+
+	  In Pascal:
+	    Color := getpixel(x,y);
+	    inline($89/$56/<Color);  (* Loads 15-bit color value *)
+
+	  In C:
+	    Color = getpixel(x,y);
+	    Color = _DX;
+	  
+	o Mouse code hooks added (1.05)
+
+	o Fixed text clipping at right and bottom edges (1.1)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (1.1)
+
+	o Fixed detection so it should work with newer S3 cards (1.1)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (1.5)
+
+	o Fixed lockup bug (1.6)
+

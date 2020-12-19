@@ -1,0 +1,8 @@
+Files included in this distribution:
+
+  hgxmouse.exe - HGXMOUSE TSR Executable
+  tmouse.com   - Text mode cursor initialization program
+		 (does an int 0x33, function 0x4500 with BL=6)
+  moustest.exe - Mouse test program (requires mouse enabled BGI drivers)
+  hgxmouse.doc - HGXMOUSE Documentation
+

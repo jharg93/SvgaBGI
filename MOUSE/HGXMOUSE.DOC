@@ -1,0 +1,433 @@
+
+
+                                HGXMOUSE
+                     The Multi-Mode Mouse Cursor TSR
+                              Version 1.3
+
+             Copyright (c) 1994 by Jordan Hargraphix Software
+                           All Rights Reserved
+
+
+=============================================================================
+
+  The HGXMOUSE driver provides an enhanced interface for drawing the mouse
+cursor in modes the standard mouse drivers do not support.  It supports
+a wide range of SuperVGA cards and provides standard mouse cursor drawing 
+capabilities for 16, 256, 32k, 64k and TrueColor SuperVGA modes, 
+16 and 256 color TweakedVGA modes, and tweaked and standard text modes.  
+It also provides the ability to set the cursor foreground and background 
+colors, and also the ability to use a bitmap for the mouse pointer.
+If your Svga card supports a hardware cursor, HGXMOUSE will use it to
+display the mouse cursor.
+
+  Requirements:
+	An IBM PC AT or 100% compatible. (286 or better)
+	An EGA, VGA or SuperVGA video card.
+	A mouse driver (mouse.com or mouse.sys equivalent)
+
+  Currently supported video cards:
+	VESA
+	Weitek
+	Chips & Technologies
+	Paradise (*)
+	Compaq
+	Video7
+	Genoa
+	Everex
+	Cirrus 54XX (*)
+	Cirrus 64XX
+	Trident 8800/8900
+	ATI
+	Ahead A & B
+	NCR
+	S3 (*)
+	Avance Logic 2101
+	MXIC 68000
+	Acumos
+	Realtek
+	Primus 2000
+	Oak
+	UMC
+	HMC
+	Tseng ET3000/ET4000/ET3000W32
+
+    (*) Currently supports hardware cursor
+
+=============================================================================
+
+  Features of HGXMOUSE TSR:
+
+    ------------------------------------------
+     Text mode graphical cursor driver
+
+      * Normally, the mouse cursor in text mode is represented by a block
+      character, which can only be moved in character cell increments.
+      HGXMOUSE turns the block character into a graphical pointer (like
+      Norton Utilities and other programs) which can be moved in pixel
+      increments, but it will work with all existing applications that
+      use the software mouse cursor.
+
+      * The default shape of the text mode graphical cursor can be changed 
+      with the standard mouse Set Pointer call (int 0x33, function 9).
+      The maximum size of the text mode cursor is 16x16.
+
+    ------------------------------------------
+     Graphics mode cursor driver
+
+      * The cursor shape can be changed in three ways:
+	  a) Set Pointer mouse call (int 0x33, function 0x9).
+	  b) Set Large Pointer call (int 0x33, function 0x12).
+	     Maximum size of cursor is 32x32.
+	  c) Set Bitmap Pointer call (int 0x33, function 0x4508)
+	     This function allows you to use a bitmap for the mouse
+	     pointer.  The maximum size of the cursor is 32x32.
+
+      * Ability to set the cursor's foreground and background colors
+
+=============================================================================
+
+  Loading the HGXMOUSE TSR.
+
+    The HGXMOUSE TSR is not a replacement for your mouse driver, but an
+  extension to it.  Therefore your mouse driver must be loaded before you
+  load HGXMOUSE.  Normal mouse functions will work when the HGXMOUSE driver
+  is loaded; the extended functions are not active until the driver is 
+  initialized.
+
+  TSR Command-line options:
+
+    The HGXMOUSE.EXE TSR supports several command-line options.
+
+   /h, /? : Shows the available command line options.
+       /d : Detects and prints the Svga chipset, without installing the TSR.
+       /u : Uninstalls the TSR from memory.
+       /n : Disables the hardware cursor support.
+
+=============================================================================
+
+ Using the HGXMOUSE programming interface.
+
+ Using the HGXMOUSE interface is transparent if using one of my BGI drivers;
+all you have to do is call the mouse reset (interrupt 33, ax = 0) and show
+mouse cursor (int 33, ax = 1), just like you would normally.  This allows
+HGXMOUSE to work with standard mouse libraries without performing any
+additional initialization.  If you are not using the BGI drivers; you
+must first initialize the TSR with hgxInit (int 33, ax = 0x4500), then
+you may call the standard mouse (int 33) functions.
+
+=============================================================================
+  Registration fees
+
+  HGXMOUSE alone					$40
+  if ordered with one or more of my BGI drivers		$25
+
+=============================================================================
+			      Appendix A
+
+		  Application Programming Interface
+
+    HGXMOUSE provides extentions to the int 0x33 mouse programming API
+for initialization and de-initialization, cursor control and version
+information.
+
+    A.1 ............................................ hgxInit
+    A.2 ............................................ hgxDeinit
+    A.3 ............................................ hgxBank
+    A.4 ............................................ hgxVersion
+    A.5 ............................................ hgxCursorFg
+    A.6 ............................................ hgxCursorBg
+    A.7 ............................................ hgxSetSacmap
+    A.8 ............................................ hgxSetBmpCursor
+
+=============================================================================
+
+1) hgxInit: Enables the enhanced cursor drawing capabilities.
+
+  hgxInit initializes HGXMOUSE with the current mode information.  This
+function must be called before any of the enhanced cursor drawing features
+can be used.  If you are using HGXMOUSE with my BGI drivers, you do not
+need to call this function, since the BGI drivers automatically initialize 
+HGXMOUSE during initgraph().
+
+  Modes supported: All
+
+  Input:
+	AX = 0x4500
+	SI = X resolution of mode (*)
+	DI = Y resolution of mode (*)
+	DX = Bytes per scanline
+	BL = Mode type
+	 (0) MODE_P8		8-bit packed  (Mode 0x13 and SuperVGA 256 color)
+	 (1) MODE_P15		15-bit packed (SuperVGA 32768 color)
+	 (2) MODE_P16		16-bit packed (SuperVGA 65536 color)
+	 (3) MODE_P24		24-bit packed (SuperVGA TrueColor)
+	 (4) MODE_PL4		4-bit planar  (SuperVGA & TweakedVGA 16 color)
+	 (5) MODE_PL8		8-bit planar  (Mode X & other tweaked 256-color)
+	 (7) MODE_TWKTEXT	Tweaked text
+	 (6) MODE_TEXT		Standard text mode
+
+  Returns:
+	AL = 0x45 if successful
+	AH = error code (0 if successful)
+
+ (*) Only needed for graphical modes, the text mode cursor determines the
+ current resolution from the number of rows and columns currently displayed.
+
+ Example: To initialize the HGXMOUSE TSR for 320x200x256 mode 0x13
+
+	int hgxInit() {
+	  union REGS regs;
+
+	  regs.x.ax = 0x4500;
+	  regs.x.si = 320;	// X resolution
+	  regs.x.di = 200;	// Y resolution
+	  regs.h.bl = 0;	// MODE_P8
+	  regs.x.dx = 320;	// Bytes per line
+	  int86(0x33, &regs, &regs);
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+2) hgxDeInit: Disables the extended cursor drawing capabilities.
+
+  hgxDeInit is the opposite of hgxInit.  It disables the enhanced features
+of the HGXMOUSE driver and returns the mouse operation to normal mode.
+Any call to hgxInit must be matched with a call to hgxDeInit.  Again, if
+you are using my BGI drivers with HGXMOUSE, they will automatically disable
+HGXMOUSE when closegraph() is called.
+
+  Modes supported: All
+
+  Input:
+	AX = 0x4501
+
+  Output:
+	AL = 0x45 if successful
+	AH = error code (0 if successful)
+
+ Example: To de-initialize the extended functions
+
+	int hgxDeinit() {
+	  union REGS regs;
+
+	  regs.x.ax = 0x4501;
+	  int86(0x33, &regs, &regs);
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+3) hgxBank: Sets the current SVGA bank for HGXMOUSE.
+
+  hgxBank sets the current SuperVGA drawing bank.  Current SuperVGA cards
+have 1MB to 4MB onboard, but only 64KB can be accessed at one time.  A paging
+scheme is used to access the entire video memory in 64KB chunks.  If you
+are setting the bank directly, HGXMOUSE needs to keep updated with the
+current bank so that when it draws the cursor on the screen, it properly
+restores the current bank the application is using.  If you are using my
+BGI drivers, they automatically update the HGXMOUSE bank.
+
+  Modes supported: All
+
+  Input:
+	AX = 0x4504
+	DL = bank number
+
+  Output:
+	AL = 0x45 if successful
+	AH = error code (0 if successful)
+
+=============================================================================
+
+4) hgxVersion: Get version of HGXMOUSE
+
+  hgxVersion returns the current version of the HGXMOUSE driver.
+
+  Modes supported: All
+
+  Input:
+	AX = 0x4504
+
+  Output:
+	BH = Major version
+	BL = Minor version
+	CX = Code segment of TSR
+
+  Example: To get the curent version of HGXMOUSE
+
+	int hgxVersion(int *major, int *minor) {
+	  union REGS regs;
+
+	  regs.x.ax = 0x4504;
+	  int86(0x33, &regs, &regs);
+	  if (major) *major = bh;
+	  if (minor) *minor = bl;
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+5) hgxCursorFG: Sets the cursor's current foreground color.
+
+  hgxCursorFG allows you to set the current RGB foreground color of the cursor.
+The foreground color is the color that normally displays as white in the
+standard mouse cursor.
+
+  Modes supported: MODE_P8, MODE_P15, MODE_P16, MODE_P24, MODE_PL8
+  		   (MODE_PL4 - 16 colors, currently not supported)
+
+  Input:
+	AX = 0x4505
+	BL = Blue value for TrueColor & HiColor modes
+	   = Color index (0-255) for 256 color modes
+	   = Color index (0-15) for 16 color modes
+	BH = Green value for HiColor & TrueColor modes
+	   = N/A for 16 & 256-color modes
+	CL = Red value for HiColor & TrueColor modes
+	   = N/A for 16 & 256-color modes
+
+  Output:
+	AL = 0x45 if successful
+	AH = error code (0 if successful)
+
+Note: Some hardware cursors can accept 24-bit color values in 16 & 256
+	color modes.
+
+  Example: Set the cursor FG color
+
+	int hgxSetCursorFG(int r, int g, int b) {
+	  union REGS regs;
+
+	  regs.x.ax = 0x4505;
+	  regs.h.bl = b;
+	  regs.h.bh = g;
+	  regs.h.cl = r;
+	  int86(0x33, &regs, &regs);
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+6) hgxCursorBG: Sets the cursor's background color
+
+  hgxCursorBG allows you to set the current RGB background color of the cursor.
+The background color is the color that normally displays as black in the
+standard mouse cursor.
+
+  Modes supported: MODE_P8, MODE_P15, MODE_P16, MODE_P24, MODE_PL8
+  		   (MODE_PL4 - 16 colors, currently not supported)
+
+  Input:
+	AX = 0x4506
+	BL = Blue value for TrueColor & HiColor modes
+	   = Color index (0-255) for 256 color modes
+	   = Color index (0-15) for 16 color modes
+	BH = Green value for HiColor & TrueColor modes
+	   = N/A for 16 & 256-color modes
+	CL = Red value for HiColor & TrueColor modes
+	   = N/A for 16 & 256-color modes
+
+  Output:
+	AL = 0x45 if successful
+	AH = error code (0 if successful)
+
+Note: Some hardware cursors can accept 24-bit color values in 16 & 256
+	color modes.
+
+  Example: Set the cursor BG color
+
+	int hgxSetCursorBG(int r, int g, int b) {
+	  union REGS regs;
+
+	  regs.x.ax = 0x4506;
+	  regs.h.bl = b;
+	  regs.h.bh = g;
+	  regs.h.cl = r;
+	  int86(0x33, &regs, &regs);
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+7) hgxSetSacmap: Sets the sacrifice character map for the text mode cursor.
+
+  The text mode cursor works by copying the character definitions of the
+  characters under the cursor into a set of 'sacrifice' characters, then
+  drawing the bitmap of the cursor 'on top' of the bitmap in the sacrifice
+  characters.  This is why parts of the mouse cursor may appear on other
+  parts of the screen; those characters are part of the sacrifice map.
+  The sacrifice map can occupy up to 9 characters (3x3 grid) for a 16x16
+  cursor.
+
+  In 25-line mode, the sacrifice characters should be taken from the range
+  0xC0-0xDF so that the 9th column will be duplicated, otherwise you may
+  see vertical lines running through the cursor as you move it around the
+  screen.
+
+  Modes supported: MODE_TEXT
+
+  Input:
+	AX = 0x4507
+	ES:BX = segment:offset of sacrifice character map (9 bytes)
+	  Layout of sacrifice map
+	  +---+---+---+
+	  | 0 | 1 | 2 |
+	  +---+---+---+
+	  | 3 | 4 | 5 |
+	  +---+---+---+
+	  | 6 | 7 | 8 |
+	  +---+---+---+
+
+  Example: Set the current sacrifice character map
+
+	int hgxSetSacmap(char sacChars[9]) {
+	  union REGS regs;
+	  struct SREGS sregs;
+
+	  regs.x.ax = 0x4507;
+	  regs.x.bx = FP_OFF(sacChars);
+	  sregs.es  = FP_SEG(sacChars);
+	  int86x(0x33,&regs,&regs,&sregs);
+	  return ((regs.h.al == 0x45) ? 1 : 0);
+	};
+
+=============================================================================
+
+8) hgxBmpCursor: Sets bitmap data for the cursor pointer.
+
+  hgxBmpCursor allows you to take any bitmap and use it as the mouse pointer.
+  The bitmap may contain pixels of any color, along with a special transparent
+  color.  Pixels of the transparent color will not be displayed when the
+  bitmap cursor is drawn to the screen.
+
+  The format of the bitmap is mode-dependent, but it is the same format used
+  for each of my BGI drivers.
+
+  Modes supported: MODE_P8, MODE_P15, MODE_P16, MODE_P24, MODE_PL8
+  		   (MODE_PL4 - 16 colors, currently not supported)
+
+  Input:
+	AX=0x4508
+	BX=Horizontal hot spot of cursor
+	CX=Vertical hot spot of cursor
+	ES:DX = segment:offset of cursor data
+	  Format of cursor data
+	    offset	length
+	    DX+0 	4 bytes		Transparent color
+
+	    Format of transparent color: (x = don't care)
+		00000000RRRRRRRRGGGGGGGGBBBBBBBB - 24 bit modes
+		xxxxxxxxxxxxxxxxRRRRRGGGGGGBBBBB - 16 bit modes
+		xxxxxxxxxxxxxxxx0RRRRRGGGGGBBBBB - 15 bit modes
+		xxxxxxxxxxxxxxxxxxxxxxxxIIIIIIII - Color index for 256 colors
+
+	;; Following format is the same as the buffer used in getimage/putimage
+	    DX+4	2 bytes		Width-1
+	    DX+6	2 bytes		Height-1
+	    DX+8	n bytes		image data
+
+	    Format of image data:
+		24 bit modes:      Each pixel is 4 bytes
+		16 & 15-bit modes: Each pixel is 2 bytes
+		256-color:         Each pixel is 1 byte

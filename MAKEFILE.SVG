@@ -1,0 +1,30 @@
+## Makefile for initsvga.c (SuperVGA drivers)
+## Demonstrates use of registerfarbgidriver
+PROG 	= initsvga			# Program name to compile
+CC 	= tcc				# Command-line compiler (tcc/bcc)
+LIB 	= e:\lang\lib			# Library directory
+INCLUDE = e:\lang\include		# Include directory
+MODEL	= s				# Memory Model
+
+$(PROG).exe: $(PROG).c svga256f.obj svga16f.obj svga32kf.obj
+	$(CC) -L$(LIB) -I$(INCLUDE) -m$(MODEL) $(PROG).c \
+	svga32kf.obj svga256f.obj svga16f.obj graphics.lib
+
+svga256f.obj : svga256.bgi
+	bgiobj /F svga256.bgi svga256f.obj _Svga256_fdriver SVGA256_TEXT
+
+svga16f.obj : svga16.bgi
+	bgiobj /F svga16.bgi svga16f.obj _Svga16_fdriver SVGA16_TEXT
+
+svga64kf.obj : svga64k.bgi
+	bgiobj /F svga64k.bgi svga64kf.obj _Svga64k_fdriver SVGA64k_TEXT
+
+svgaTCf.obj : svgaTC.bgi
+	bgiobj /F svgaTC.bgi svgaTCf.obj _SvgaTC_fdriver SVGATC_TEXT
+
+svga32kf.obj : svga32k.bgi
+	bgiobj /F svga32k.bgi svga32kf.obj _Svga32k_fdriver SVGA32k_TEXT
+
+svgas3f.obj : svgas3.bgi
+	bgiobj /F svgas3.bgi svgas3f.obj _SvgaS3_fdriver SVGAS3_TEXT
+

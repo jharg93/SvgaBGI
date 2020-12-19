@@ -1,0 +1,83 @@
+SuperVGA 256 BGI driver 
+Version 3.2
+August 23, 1994
+
+Revisions:
+	3.2 - August 23, 1994
+	3.15 - July 20, 1994
+	3.1 - March 30, 1994
+	3.05 - March 8, 1994
+	3.0 - August 28, 1993
+	2.6 - May 21, 1993
+	2.5 - April 20, 1993
+	2.45 - January 28, 1993
+	2.4 - June 12, 1992
+
+This is the newest version of my SuperVGA 256 BGI driver.  I have fixed 
+several bugs in the previous releases, as well as added several improvements.
+
+	o 1024x768x256 color mode is now supported on Tseng 4000,
+	  Chips&Tech, Trident 8900 and Ahead video cards.
+
+	o Getimage and putimage will work with bitmaps up to the 
+	 size of available memory. (> 64k)
+
+	o VESA support has been added.
+
+	o Added setvgapalette256 function.
+
+	o Floodfill is implemented. (still slow!) (2.0)
+
+	o Added new logical operations to putimage (2.25)
+	  XNOR_PUT
+	  NOR_PUT
+	  NAND_PUT
+	  TRANS_COPY_PUT - Treats 0 as transparent (useful for cursors)
+
+	o Logical operations for putimage actually work correctly! ;-> (2.3)
+
+	o Fixed minor line drawing bug (2.31)
+
+	o Support for the S3 card (non-native mode) has been added (2.4)
+
+	o Paging has been implemented for SuperVGA cards that support it (2.4)
+	  (Currently only support Tseng4000, C&T, Paradise and Video7;
+	   ATI and Genoa cards do not support paging above 64k)
+
+	Mode			Paging?		# of pages (with 1024k)
+	320x200			yes 		16
+	640x400			yes 		4
+	640x480			yes 		3
+	800x600			yes 		2
+	1024x768		no		1
+	640x350			yes 		4
+	1280x1024		no		0	(needs 1.2M)
+
+	o Mouse code hooks added (2.45)
+
+	o New card support added, changed old card support (2.5)
+	    Acumos, Avance Logic 2101, Cirrus 54xx, Compaq, MXIC 68020, NCR, 
+	    Primus 2000, Realtek
+
+	o Paging enhanced to work with new cards (2.5)
+
+	o Fixed text clipping at right and bottom edges (2.6)
+
+	o Various speed optimizations (line & solid bar) (2.6)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (2.6)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (3.0)
+
+	o Fixed Cirrus Logic detect bug (3.05)
+
+	o New, improved card detection support (3.1)
+	  Supports IITAGX, UMC, HMC, Weitek cards.
+
+	o Fixed Chips & Technologies detect bug (3.15)
+
+	o Integrated support for HGXMOUSE mouse cursor TSR. (3.15)
+
+	o Fixed IIT AGX bankswitch bug (3.2)
+

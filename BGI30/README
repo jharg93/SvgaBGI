@@ -1,0 +1,4 @@
+These are the BGIv3.0 drivers for 16-bit protected mode.
+They are used by Turbo Pascal 7.0 and Borland PowerPack.
+Rename xxx.BGX to xxx.BGI for use with TP/BP 7.0.
+

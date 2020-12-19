@@ -1,0 +1,9 @@
+svga16 		2.10		;; BGIv3.0
+svga256 	3.10		;; BGIv3.0
+svga32k		1.60		;; BGIv3.0
+svga64k		1.60		;; BGIv3.0
+svgas3		1.60		;; BGIv3.0
+svgatc		1.10		;; BGIv3.0
+twk16		1.60		;; BGIv3.0
+twk256		1.60		;; BGIv3.0
+

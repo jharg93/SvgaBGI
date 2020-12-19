@@ -1,0 +1,21 @@
+## Makefile for initsvga.c (Tweaked drivers)
+## Demonstrates use of registerfarbgidriver
+PROG 	= initsvga			# Program name to compile
+CC 	= tcc				# Command-line compiler (tcc/bcc)
+LIB 	= e:\lang\lib			# Library directory
+INCLUDE = e:\lang\include		# Include directory
+MODEL	= s				# Memory Model
+
+$(PROG).exe: $(PROG).c twk256f.obj twk16f.obj
+	$(CC) -L$(LIB) -I$(INCLUDE) -m$(MODEL) $(PROG).c \
+	twk256f.obj twk16f.obj graphics.lib
+
+twk256f.obj : twk256.bgi
+	bgiobj /F twk256.bgi twk256f.obj _twk256_fdriver TWK256_TEXT
+
+twk16f.obj : twk16.bgi
+	bgiobj /F twk16.bgi twk16f.obj _twk16_fdriver TWK16_TEXT
+
+twktextf.obj : twktext.bgi
+	bgiobj /F twktext.bgi twktextf.obj _twktext_fdriver TWKTEXT_TEXT
+

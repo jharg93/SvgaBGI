@@ -1,0 +1,48 @@
+TweakVGA 256 BGI driver
+Version 1.7
+August 23, 1994
+
+Revisions:
+	1.7 - August 23, 1994
+	1.65 - July 20, 1994
+	1.5 - August 28, 1993
+	1.4 - May 21, 1993
+	1.3 - April 4, 1993
+	1.25 - January 28, 1993
+	1.2  - June 22, 1992
+
+This is the newest version of my 256 color tweaked BGI driver.  All applicable
+functions have been implemented.
+
+NOTES: The mouse cursor will not work unless the HGXMOUSE TSR is loaded.
+
+	o Greatly improved speed on bar filling (1.0)
+
+	o Getimage/Putimage now work (1.1)
+
+	o Paging is now implemented (1.2)
+
+	Mode		Paging		# of pages (with 64k..no bank switch)
+	320x400		yes 		2
+	360x480		no		1
+	376x564		no		1
+	400x564		no		1
+	400x600		no		1
+	320x240		yes 		3
+
+	o Mouse code hooks added (1.25)
+
+	o Fillpattern bug fixed (It was being written backwards - 1.3)
+
+	o Fixed text clipping at right and bottom edges (1.4)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (1.4)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (1.5)
+
+	o Integrated support for HGXMOUSE mouse cursor TSR. (1.65)
+
+	o Added 360x350x256 mode (1.7)
+
+

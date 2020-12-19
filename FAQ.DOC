@@ -1,0 +1,89 @@
+
+ ---------------------------------------------------------------------------
+  Q: Why doesn't the mouse cursor show up when I try to display it?
+
+  A: Most mouse drivers don't recognize video modes other than standard
+     VGA, so they don't know how to display the cursor in those modes.
+     Some newer mouse drivers, such as Microsoft's and Logitech's,
+     have an overlay which knows how to draw the cursor in VESA modes.
+     However, there are no current mouse drivers that have support for 
+     tweaked modes or other non-VESA video modes.
+
+  Fix:
+     The HGXMOUSE TSR/LIB will handle cursor drawing automatically in all 
+     the modes the BGI drivers support, so if you load it before your 
+     program starts, the mouse cursor will be visible.
+
+ ---------------------------------------------------------------------------
+  Q: Why isn't anything showing up on the screen when I start drawing
+     after initgraph?
+
+  A: The BGI kernel by default sets the initial color to the max color
+     supported.  In 16 color modes, this is fine, since the max color
+     also happens to be white.  In 256 color modes, the max color is 
+     255, which in the default palette is black.  You must do a setcolor(15)
+     before drawing.  In the hi/true color modes, the setrgbpalette 
+     interface must be used to set the current colors, so initialize
+     the current color to white using RealDrawColor.
+
+ ---------------------------------------------------------------------------
+  Q: Why can't I link the BGI driver into my program?
+
+  A: register{far}bgidriver() may function differently depending on which 
+     version and language Borland compiler you have.  The easiest way to 
+     get the drivers to link properly is to fool the BGI kernel into thinking 
+     that the BGI driver is one of the Borland-supplied drivers.  Every BGI 
+     file has an ID string near offset hex 8A in the BGI header.  If this 
+     string is changed to EGAVGA before the driver is linked in, then 
+     register{far}bgidriver and initgraph will work successfully.  This
+     ID string is a Pascal string, with the length field before it, so don't
+     forget to modify this byte too.
+
+  Example:
+   c:\svga> debug svga256.bgi
+   -d180 l 20
+   0D74:0180  A0 00 00 00 5C 22 02 00-01 00 07 53 56 47 41 32   ....\".....SVGA2
+   0D74:0190  35 36 00 00 00 00 00 00-00 00 00 00 00 00 00 00   56..............
+   -a18a
+   { Note: For the protected mode driver, the offset is 18E }
+   0D74:018A db 6,'EGAVGA',0
+   0D74:0192 
+   -d180 l 20
+   0D74:0180  A0 00 00 00 5C 22 02 00-01 00 06 45 47 41 56 47   ....\".....EGAVG
+   0D74:0190  41 00 00 00 00 00 00 00-00 00 00 00 00 00 00 00   A...............
+   -w
+   -q
+
+ ---------------------------------------------------------------------------
+  Q: Why do I get an 'invalid device driver file' when I run my program?
+
+  A: You are probably using Turbo/Borland Pascal 7.0 in protected mode
+     with a BGI v2.0 file.  TC++/BC++ and TP/BP in real mode need a
+     BGI version 2.0 file.  In protected mode, BP/TP 7.0 need a BGI
+     version 3.0 file.  BGI v2.0 and BGIv3.0 drivers are not compatible
+     with each other.  The normal v2.0 drivers are located in the main
+     source directory, the protected mode drivers are in the BGI30 directory.
+
+ ---------------------------------------------------------------------------
+  Q: Why doesn't imagesize return the correct value?
+
+  A: The imagesize() function doesn't call the BGI drivers to calculate the
+     size of an image.  It also won't return a value >64k.  The correct
+     size calculation for the different drivers is:
+
+	Svga16,Twk16    : imsize = 4+(((long)xwid >> 1)+1)*ywid;
+	Svga256,Twk256  : imsize = 4+((long)xwid)*ywid;
+	Svga32k/Svga64k : imsize = 4+((long)xwid << 1)*ywid;
+ 	SvgaTC          : imsize = 4+((long)xwid << 2)*ywid;
+
+ ---------------------------------------------------------------------------
+  Q: Why does initgraph return error 246?
+
+  A: The BGI driver returns an 8-bit signed value to the BGI kernel.  The
+     BGI kernel zero extends this value, instead of sign extending it, so
+     the value it is returning is actually 246 instead of -10, which is
+     grModeNotSup (mode not supported).  This means that your video card
+     does not support that particular mode.  If no extended modes work
+     on your card, either your card is not supported or it is not getting
+     detected properly.
+

@@ -1,0 +1,71 @@
+SuperVGA 16 BGI driver
+Version 2.2
+August 23, 1994
+
+Revisions:
+	2.2 - August 23, 1994
+	2.15 - July 20, 1994
+	2.1 - March 30, 1994
+	2.05 - March 8, 1994
+	2.0 - August 28, 1993
+	1.7 - May 21, 1993
+	1.6 - April 20, 1993
+	1.55 - January 28, 1993
+	1.5 - June 22, 1992
+
+This is the latest version of my 16 color BGI driver.  All functions have
+been implemented (including paging and floodfill), and should work like
+the EGAVGA driver.
+
+	o Fixed putimage bug. Now logical operations work the way they
+	  are supposed to. ;->
+
+	o Added new logical operations to putimage:
+	  XNOR_PUT
+	  NAND_PUT
+	  NOR_PUT
+
+	o Fixed VESA support (1.4)
+
+	o Support for the S3 card (non-native mode) has been added (1.5)
+
+	o Enhanced paging support (1.5)
+
+	  Mode		Paging?		# of pages (with 1M)  (with std VGA)
+	  320x200	yes				32	8
+	  640x200	yes				16	4
+	  640x350	yes				8	2
+	  640x480	yes				4	1
+	  800x600	yes				4	0
+	  1024x768	yes				2	0
+
+	o Mouse code hooks added (1.55)
+
+	o New card support added, changed old card support (1.6)
+	    Acumos, Avance Logic 2101, Cirrus 54xx, Compaq, MXIC 68020, NCR, 
+	    Primus 2000, Realtek
+
+	o Paging enhanced to work with new cards (1.6)
+
+	o 1280x1024x16 support added (not fully tested) (1.6)
+
+	o Fixed text clipping at right and bottom edges (1.7)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (1.7)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (2.0)
+
+	o Fixed bug in Cirrus Logic detect (2.05)
+
+	o Sped up line drawing & bar slightly (2.1)
+
+	o New, improved card detection support (2.1)
+	  Supports IITAGX, UMC, HMC, Weitek cards.
+
+	o Fixed Chips & Technologies detect bug (2.15)
+
+	o Integrated support for HGXMOUSE mouse cursor TSR. (2.15)
+
+	o Fixed IIT AGX bankswitch bug (2.2)
+

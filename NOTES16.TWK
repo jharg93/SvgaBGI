@@ -1,0 +1,31 @@
+TweakVGA 16 BGI driver
+Version 1.7
+August 23, 1994
+
+Revisions:
+	1.7 - August 23, 1994
+	1.65 - July 20, 1994
+	1.5 - August 28, 1993
+	1.2 - May 21, 1993
+	1.15 - January 28, 1993
+	1.1 - August 20, 1991
+
+This is the latest version of my 16 color tweaked BGI driver.  All functions 
+have been implemented (including floodfill), and should work like
+the EGAVGA driver.
+
+NOTES: Paging and mouse cursor will not work
+       The mouse cursor will work if the HGXMOUSE TSR is loaded.
+
+	o Mouse code hooks added (1.15)
+
+	o Fixed text clipping at right and bottom edges (1.2)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (1.2)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (1.5)
+
+	o Integrated support for HGXMOUSE mouse cursor TSR. (1.65)
+
+

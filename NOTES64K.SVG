@@ -1,0 +1,118 @@
+SuperVGA 65536 BGI driver 
+Version 1.7
+August 23, 1994
+
+Revisions:
+	1.7 - August 23, 1994
+	1.65 - July 20, 1994
+	1.55 - March 8, 1994
+	1.5 - August 28, 1993
+	1.1 - May 21, 1993
+	1.0 - April 10, 1993
+
+This is the newest version of my SuperVGA 65536 BGI driver.  All functions
+have been implemented, but there may still be bugs.
+
+Note:  Palette functions, and the mouse cursor will not work with this driver.
+The mouse cursor will work if you have the HGXMOUSE TSR loaded.
+
+  Using the HiColor driver:
+
+	Implementing the 65536 color driver involved several hacks, as
+	the BGI interface only supports 8-bit color values, but the driver
+	needed support for 16-bit color values.  The procedures that needed
+	to be changed were those that accepted color values, (SetColor,
+	SetFillStyle, SetFillPattern, PutPixel and Floodfill)  and those 
+	that return color values (GetColor and GetPixel).
+	As the HiColor modes do not support palettes, I decided to use
+	the SetRgbPalette call to set colors, as it accepts values for the 
+	R,G and B components of the color.
+
+	The format of a pixel in the HiColor modes is:
+		-Byte 1- -Byte 0-
+		RRRRRGGG GGGBBBBB
+
+	Several new functions are defined to make the color selection easier.
+	In addition, the macro RGB(rv,gv,bv) has been defined.  It packs
+	the R, G and B values into the format described above and returns the
+	combined color.
+
+	* RealDrawColor(); - Sets the current drawing color.
+	  Usage:
+	    setcolor(RealDrawColor(RGB(rval,gval,bval)); - HiColor modes
+	    setcolor(RealDrawColor(cval)); - (suggested for any other driver)
+
+	* RealFillColor(); - Sets the current fill color.
+	  Usage:
+	    setfillstyle(fillstyle,RealFillColor(RGB(rval,gval,bval)));
+	    setfillstyle(fillstyle,RealFillColor(cval));
+	    setfillpattern(fillpat,RealFillColor(RGB(rval,gval,bval)));
+	    setfillpattern(fillpat,RealFillColor(cval));
+
+	* RealColor(); - For putpixel, sets the color of the pixel
+		       - For floodfill, sets the color of the boundary
+	    putpixel(x,y,RealColor(RGB(rval,gval,bval)));
+	    putpixel(x,y,RealColor(cval));
+	    floodfill(x,y,RealColor(RGB(rval,gval,bval)));
+	    floodfill(x,y,RealColor(cval));
+
+	* RealDrawColor, RealFillColor, and RealColor all use a hacked 
+	  interface to setrgbpalette.  If you would rather use the call
+	  directly, the format is:
+
+	    RealDrawColor:
+		setrgbpalette(1024,Rval,Gval,Bval); 
+	    RealFillColor:
+		setrgbpalette(1025,Rval,Gval,Bval);
+	    RealColor:
+		setrgbpalette(1026,Rval,Gval,Bval);
+
+	  where Rval, Bval = 0..31, Gval=0..63.
+
+	* GetPixel normally only returns an 8-bit value.  However, the
+	  value returned from the BGI driver is a 16-bit value in DX (the 
+	  BGI kernel loads the value into AX and clears the upper 8 bits),
+	  so to read the value of a pixel:
+
+	  In Pascal:
+	    Color := getpixel(x,y);
+	    inline($89/$56/<Color);  (* Loads 16-bit color value from DX *)
+
+	  In C:
+	    Color = getpixel(x,y);
+	    Color = _DX;
+	  
+	* Paging information:
+
+	  Mode		Paging?		# of pages (with 1024k)
+	  320x200	yes		8
+	  640x350	yes		2
+	  640x400	yes		2
+	  640x480	no		1
+	  800x600	no		1
+
+	* Works with: ATI, Cirrus, Everex, NCR, Oak-077, Primus 2000,
+	  Paradise WD90c3x and VESA [v1.2+]
+
+	o Fixed text clipping at right and bottom edges (1.1)
+
+	o Various speed optimizations (line & solid bar) (1.1)
+
+	o Added compile-time support for 8x8, 8x14, or 8x16 bitmap fonts (1.1)
+
+	o Drivers now have compile-time support for BGI version 3.0.
+	  Supports protected mode with Borland Pascal 7.0 (1.5)
+
+	o Added 1024x768x64k and 1280x1024x64k modes. (1.5)
+
+	o Fixed Cirrus Logic detect bug (1.55)
+
+	o New, improved card detection support (1.6)
+	  Supports IITAGX, UMC, HMC, Weitek cards.
+
+	o Fixed Chips & Technologies detect bug (1.65)
+
+	o Integrated support for HGXMOUSE mouse cursor TSR. (1.65)
+
+	o Fixed IIT AGX bankswitch bug (1.7)
+
